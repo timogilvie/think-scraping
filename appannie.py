@@ -1,11 +1,34 @@
 import requests
-import json, time
+import json
+import time
+import csv
+import random
 import datetime
 from lxml import etree
+from pprint import pprint as pp
 from secrets import APPANNIE_USERNAME, APPANNIE_PASSWORD_HASHED, APPANNIE_USERNAME2, APPANNIE_PASSWORD_HASHED2, APPANNIE_USERNAME3, APPANNIE_PASSWORD_HASHED3, APPANNIE_USERNAME4, APPANNIE_PASSWORD_HASHED4, SCRAPED_DATA_PATH
 
+
+def load_proxies(path):
+    formatted = []
+    with open(path, "r") as f:
+        for proxy in csv.reader(f, delimiter="\t"):
+            formatted.append({
+                "iso": proxy[0],
+                "country": proxy[1],
+                "city": proxy[2],
+                "host": proxy[3],
+                "port": proxy[4],
+                "user": proxy[5],
+                "pass": proxy[6]
+            })
+    return formatted
+        
+    
+        
 class AppAnnie(object):
-    def __init__(self, country_iso):
+    
+    def __init__(self, country_iso, proxy_path=None):
 
         self.session = requests.Session()
         self.logged_in = False
@@ -21,10 +44,10 @@ class AppAnnie(object):
                           'paid_rank,price,category,all_avg,all_count,last_avg,last_count,' \
                           'first_release_date,last_updated_date,est_download,est_revenue' \
                           'wau&order_type=desc&order_by=grossing_rank'.format(self.country, self.date_as_string)
+        self.proxies = load_proxies("proxylist.csv") if not proxy_path else proxy_path
 
+    
     def login(self, username=APPANNIE_USERNAME, password=APPANNIE_PASSWORD_HASHED):
-        # print('\tLogging in...')
-
         self.session.headers.update({
             "authority": "www.appannie.com",
             "method": "GET",
@@ -33,7 +56,21 @@ class AppAnnie(object):
             "accept-encoding": "gzip, deflate, br",
             "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
         })
-
+        random_proxy = self.proxies[random.randint(0, len(self.proxies)-1)]
+        random_proxy_formatted = {"http": "http://{}:{}@{}:{}".format(
+            random_proxy['user'],
+            random_proxy['pass'],
+            random_proxy['host'],
+            random_proxy['port']
+        )}
+        self.session.proxies.update(random_proxy_formatted)
+        
+        ###### Test if we're actually using proxy ######
+        #print("Testing proxy...", random_proxy_formatted)
+        #proxy_test = self.session.get("http://ifconfig.co/json", headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"})
+        #try: print("Actual location of proxy used:", proxy_test.json().get("country"))
+        #except: pass
+        
         login_res = self.session.get(self.login_url)
         csrf = self.session.cookies.get_dict()['csrftoken']
         tree = etree.HTML(login_res.text)
@@ -62,7 +99,7 @@ class AppAnnie(object):
 
         if dashboard.status_code == 200:
             self.logged_in = True
-            print("Successfully Logged In.")
+            print("Successfully Logged In. Scraping Charts for: {}".format(self.country))
         else:
             self.logged_in = False
 
@@ -159,9 +196,8 @@ class AppAnnie(object):
 
 
 if __name__ == '__main__':
-
+    proxies = load_proxies("proxylist.csv")   
     country_list = ['us', 'jp', 'cn', 'kr', 'ca', 'gb', 'de', 'au', 'se', 'it', 'fr', 'nz', 'ru', 'sa', 'ch', 'br', 'in', 'mx']
-    country_list = ['us']
 
     for country_iso in country_list:
         crawler = AppAnnie(country_iso)
@@ -169,8 +205,6 @@ if __name__ == '__main__':
 
         with open(SCRAPED_DATA_PATH+"combined_response_{}_{}.json".format(country_iso, crawler.date_as_string), "w") as f:
             json.dump(rows, f, indent=4, sort_keys=True)
-        time.sleep(20)
-
 
 
 
