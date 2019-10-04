@@ -206,15 +206,3 @@ if __name__ == '__main__':
         with open(SCRAPED_DATA_PATH+"combined_response_{}_{}.json".format(country_iso, crawler.date_as_string), "w") as f:
             json.dump(rows, f, indent=4, sort_keys=True)
 
-
-
-    def save_feed_s3(self, data):
-        conn = boto.connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
-        bucket = conn.get_bucket(settings.S3_FEED_BUCKET_NAME)
-        key = self.generate_s3_key()
-        FeedArchive.objects.create(feed=self, key=key)
-        k = Key(bucket)
-        k.key = key
-        k.set_contents_from_string(json.dumps(data))
-        k.make_public()
-        return
