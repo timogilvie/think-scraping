@@ -196,7 +196,7 @@ class AppAnnie(object):
 
 
 if __name__ == '__main__':
-    proxies = load_proxies("proxylist.csv")   
+    proxies = load_proxies(SCRAPED_DATA_PATH+"proxylist.csv")
     country_list = ['us', 'jp', 'cn', 'kr', 'ca', 'gb', 'de', 'au', 'se', 'it', 'fr', 'nz', 'ru', 'sa', 'ch', 'br', 'in', 'mx']
 
     for country_iso in country_list:
