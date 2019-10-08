@@ -44,7 +44,7 @@ class AppAnnie(object):
                           'paid_rank,price,category,all_avg,all_count,last_avg,last_count,' \
                           'first_release_date,last_updated_date,est_download,est_revenue' \
                           'wau&order_type=desc&order_by=grossing_rank'.format(self.country, self.date_as_string)
-        self.proxies = load_proxies("proxylist.csv") if not proxy_path else proxy_path
+        self.proxies = load_proxies(SCRAPED_DATA_PATH+"proxylist.csv") if not proxy_path else proxy_path
 
     
     def login(self, username=APPANNIE_USERNAME, password=APPANNIE_PASSWORD_HASHED):
