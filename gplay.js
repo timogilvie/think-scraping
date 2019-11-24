@@ -66,7 +66,7 @@ async function get_charts(iso) {
     //await delay(4000);
     const btn = await page.$(`[aria-label="${top_charts[k]}"]`);
     if (!btn) {
-      console.log("skipped", k);
+      console.log("Skipped", k, "for", iso, "(doesn't exist)");
       continue;
     }
 
@@ -78,13 +78,7 @@ async function get_charts(iso) {
       location.reload(true);
     });
 
-    await delay(2000);
-
-    const bodyHandle = await page.$("body");
-
-    const { height } = await bodyHandle.boundingBox();
-
-    await bodyHandle.dispose();
+    await delay(4000);
 
     const viewportHeight = page.viewport().height;
 
@@ -161,8 +155,18 @@ async function main() {
   }
   var args = process.argv.slice(2, process.argv.length);
   console.log(args);
+
   for (const iso of args) {
-    await get_charts(iso);
+    var retries = 0;
+    while (retries < 4) {
+      try {
+        await get_charts(iso);
+        retries = 4;
+      } catch (err) {
+        retries += 1;
+        console.log(`\t RETRY #${retries} for ${iso} after an error`);
+      }
+    }
   }
 }
 
