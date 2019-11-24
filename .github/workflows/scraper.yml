@@ -25,3 +25,4 @@ jobs:
         . ~/.nvm/nvm.sh
         # Install node
         nvm install node
+        npm i puppeteer
