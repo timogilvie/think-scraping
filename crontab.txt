@@ -1,3 +1,4 @@
 MAILTO=togilvie@thinkgaming.com
 # Scrape and rsync
-25 7 * * * . ~/.bash_profile; python /home/ec2-user/think-scraping/appannie.py && rsync -a /home/ec2-user/think-scraping/data/ ec2-user@ec2-54-227-102-46.compute-1.amazonaws.com:/home/ec2-user/think-scraping/data/;
+20 8 * * * . ~/.bash_profile; python /home/ec2-user/think-scraping/appannie.py && rsync -a /home/ec2-user/think-scraping/data/ ec2-user@ec2-54-227-102-46.compute-1.amazonaws.com:/home/ec2-user/think-scraping/data/;
+20 7 * * * . ~/.bash_profile; node /home/ec2-user/think-scraping/gplay.js US UK CA CN KR IT JP SE
